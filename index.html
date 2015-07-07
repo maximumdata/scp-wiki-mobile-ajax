@@ -1,0 +1,152 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+</head>
+<body>
+  <div class="form">
+    <div class="left">
+      <button id="prev"><</button>
+    </div>
+    <div class="center">
+      <input type="text" id="box"></input>
+      <button id="go">go</button>
+    </div>
+    <div class="right">
+      <button id="next">></button>
+    </div>
+  </div>
+
+  <style>
+  body { margin: 0 10px; }
+  .form { position: fixed; z-index: 1000; background-color: white; padding: 2px 0; text-align: center; width: 99%; }
+  .form > div { display: inline; }
+  .left { float:left; }
+  .right { float: right; }
+  #viewer { padding-top: 40px; }
+  .collapsible-block { cursor: pointer; }
+  </style>
+
+  <div id="viewer" style="display: none;"></div>
+
+  <script>
+    var collapsibleLinks = function(){
+      $('.collapsible-block-folded > a').removeAttr("href").click(function(){
+        $(this).parent().css("display", "none");
+        $(this).parent().parent().children('.collapsible-block-unfolded').fadeIn("slow");
+      });
+      $('.collapsible-block-unfolded-link > a').removeAttr("href").click(function(){
+        $(this).parent().parent().css("display", "none");
+        $(this).parent().parent().parent().children('.collapsible-block-folded').fadeIn("slow");
+      });
+    };
+
+    $.ajaxSetup({
+        scriptCharset: "utf-8",
+        contentType: "application/json; charset=utf-8"
+    });
+
+    var skip = 1522;
+    var curSkip = 999;
+    $('#go').click(function(){
+      var boxSkip = $('#box').val();
+      if(boxSkip) {
+        if( boxSkip < 100 && boxSkip >= 10 ) {
+          boxSkip = "0"+boxSkip;
+        }
+        if( boxSkip < 10 && boxSkip >= 2 ) {
+          boxSkip = "00"+boxSkip;
+        }
+        if( boxSkip == 1 ) {
+          boxSkip = "002";
+        }
+        if( boxSkip >= 2999 ) {
+          boxSkip = "2999";
+        }
+        $('#viewer').fadeOut("fast");
+        $.getJSON('http://whateverorigin.org/get?url=' +
+          encodeURIComponent('http://www.scp-wiki.net/scp-'+boxSkip) + '&callback=?',
+          function (data) {
+            var elements = $(data.contents);
+            // console.log("> ", data.contents);
+            var found = $('#page-content', elements);
+            var curTitle = $('#page-title', elements).html();
+            curSkip = curTitle.replace(/\D/g,'');
+            found.children('div[style="text-align: right;"]').remove();
+            $('#viewer').html(found);
+            //If the expected response is JSON
+            //var response = $.parseJSON(data.contents);
+            $('.footnoteref').remove();
+            $('.footnotes-footer').remove();
+            $('#viewer').fadeIn("fast");
+            collapsibleLinks();
+          }
+        );
+      } else { $('#viewer').html("You didn't enter a number!").fadeIn("fast"); }
+    });
+    $('#prev').click(function(){
+      var newSkipBack = Number(curSkip) - 1;
+      if( newSkipBack < 100 && newSkipBack >= 10 ) {
+        newSkipBack = "0"+newSkipBack;
+      }
+      if( newSkipBack < 10 && newSkipBack >= 2 ) {
+        newSkipBack = "00"+newSkipBack;
+      }
+      if( newSkipBack == 1 ) {
+        newSkipBack = "002";
+      }
+      $('#viewer').fadeOut("fast");
+      $.getJSON('http://whateverorigin.org/get?url=' +
+        encodeURIComponent('http://www.scp-wiki.net/scp-'+newSkipBack) + '&callback=?',
+        function (data) {
+          var elements = $(data.contents);
+          var found = $('#page-content', elements);
+          var curTitle = $('#page-title', elements).html();
+          curSkip = curTitle.replace(/\D/g,'');
+          found.children('div[style="text-align: right;"]').remove();
+          $('#viewer').html(found);
+          $('.footnoteref').remove();
+          $('.footnotes-footer').remove();
+          $('#viewer').fadeIn("fast");
+          collapsibleLinks();
+          $('#box').val(curSkip);
+        }
+      );
+    });
+    $('#next').click(function(){
+      var newSkipNext = Number(curSkip) + 1;
+      if( newSkipNext < 100 && newSkipNext >= 10 ) {
+        newSkipNext = "0"+newSkipNext;
+      }
+      if( newSkipNext < 10 && newSkipNext >= 2 ) {
+        newSkipNext = "00"+newSkipNext;
+      }
+      if( newSkipNext >= 2999 ) {
+        newSkipNext = "2999";
+      }
+      $('#viewer').fadeOut("fast");
+      $.getJSON('http://whateverorigin.org/get?url=' +
+        encodeURIComponent('http://www.scp-wiki.net/scp-'+newSkipNext) + '&callback=?',
+        function (data) {
+          var elements = $(data.contents);
+          var found = $('#page-content', elements);
+          var curTitle = $('#page-title', elements).html();
+          curSkip = curTitle.replace(/\D/g,'');
+          found.children('div[style="text-align: right;"]').remove();
+          $('#viewer').html(found);
+          $('.footnoteref').remove();
+          $('.footnotes-footer').remove();
+          $('#viewer').fadeIn("fast");
+          collapsibleLinks();
+          $('#box').val(curSkip);
+        }
+      );
+      console.log(newSkipNext);
+    });
+  </script>
+
+</body>
+</html>
