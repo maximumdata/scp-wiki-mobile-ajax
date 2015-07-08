@@ -12,24 +12,26 @@
   <div class="form">
     <div class="wrap">
       <div class="left">
-        <button id="prev"><</button>
+        <button id="prev">&#9664;</button>
       </div>
       <div class="center">
         <input type="text" id="box"></input>
         <button id="go">go</button>
       </div>
       <div class="right">
-        <button id="next">></button>
+        <button id="next">&#9654;</button>
       </div>
     </div>
   </div>
+
+  <div id="viewer" style="display: none;"></div>
 
   <style>
   body { margin: 0 10px; }
   .form { position: fixed; top: 0px; right: 5px; left: 5px; z-index: 1000; background-color: white; text-align: center; height: 50px; }
   .wrap { padding-top: 5px; }
   .form > .wrap > div { display: inline; }
-  #box { height: 28px; font-size: 18px; width: 100px; text-align: center; font-weight: bold; }
+  #box { height: 28px; font-size: 18px; width: 60px; text-align: center; font-weight: bold; }
   button { height: 38px; min-width: 40px; }
   .left { float:left; }
   .right { float: right; }
@@ -37,7 +39,7 @@
   .collapsible-block { cursor: pointer; }
   </style>
 
-  <div id="viewer" style="display: none;"></div>
+
 
   <script>
     var collapsibleLinks = function(){
@@ -72,7 +74,6 @@
     });
 
     var curSkip = getRandomInt(100, 2999);
-    consol
     $('#go').click(function(){
       var boxSkip = $('#box').val();
       if(boxSkip) {
@@ -93,15 +94,12 @@
           encodeURIComponent('http://www.scp-wiki.net/scp-'+boxSkip) + '&callback=?',
           function (data) {
             var elements = $(data.contents);
-            // console.log("> ", data.contents);
             var found = $('#page-content', elements);
             var curTitle = $('#page-title', elements).html();
             curSkip = curTitle.replace(/\D/g,'');
             found.children('.heritage-rating-module').remove();
             found.children('div[style="text-align: right;"]').remove();
             $('#viewer').html(found);
-            //If the expected response is JSON
-            //var response = $.parseJSON(data.contents);
             $('.footnoteref').remove();
             $('.footnotes-footer').remove();
             $('#viewer').fadeIn("fast");
@@ -193,7 +191,6 @@
             $('#viewer').fadeIn("fast");
             collapsibleLinks();
             $('#box').val(curSkip);
-            //history.pushState({}, '', '?scp='+curSkip);
           }
         );
       }
