@@ -8,25 +8,30 @@
 </head>
 <body>
   <div class="form">
-    <div class="left">
-      <button id="prev"><</button>
-    </div>
-    <div class="center">
-      <input type="text" id="box"></input>
-      <button id="go">go</button>
-    </div>
-    <div class="right">
-      <button id="next">></button>
+    <div class="wrap">
+      <div class="left">
+        <button id="prev"><</button>
+      </div>
+      <div class="center">
+        <input type="text" id="box"></input>
+        <button id="go">go</button>
+      </div>
+      <div class="right">
+        <button id="next">></button>
+      </div>
     </div>
   </div>
 
   <style>
   body { margin: 0 10px; }
-  .form { position: fixed; z-index: 1000; background-color: white; padding: 2px 0; text-align: center; width: 99%; }
-  .form > div { display: inline; }
+  .form { position: fixed; top: 0px; right: 5px; left: 5px; z-index: 1000; background-color: white; text-align: center; height: 50px; }
+  .wrap { padding-top: 5px; }
+  .form > .wrap > div { display: inline; }
+  #box { height: 28px; font-size: 18px; width: 100px; text-align: center; font-weight: bold; }
+  button { height: 38px; min-width: 40px; }
   .left { float:left; }
   .right { float: right; }
-  #viewer { padding-top: 40px; }
+  #viewer { padding-top: 55px; font-size: 14px; }
   .collapsible-block { cursor: pointer; }
   </style>
 
@@ -49,8 +54,7 @@
         contentType: "application/json; charset=utf-8"
     });
 
-    var skip = 1522;
-    var curSkip = 999;
+    var curSkip = 100;
     $('#go').click(function(){
       var boxSkip = $('#box').val();
       if(boxSkip) {
