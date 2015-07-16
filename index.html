@@ -35,37 +35,31 @@
     // assign a random scp if you're arriving at the page without a query string, so the previous and next functions work
     var curSkip = Math.floor(Math.random() * (2999 - 100 + 1)) + 100;
 
-    // make sure the collapsible links from scp-wiki still function as intended
-    function collapsibleLinks() {
-      $('.collapsible-block-folded > a').removeAttr("href").click(function(){
-        $(this).parent().css("display", "none");
-        $(this).parent().parent().children('.collapsible-block-unfolded').fadeIn("slow");
-      });
-      $('.collapsible-block-unfolded-link > a').removeAttr("href").click(function(){
-        $(this).parent().parent().css("display", "none");
-        $(this).parent().parent().parent().children('.collapsible-block-folded').fadeIn("slow");
-      });
-    }
-
     // ajax page load happens here. the url is routed through whateverorigin.org to inject CORS headers into the response, allowing use of another site's data from a cross-origin.
     // A json object is returned, and then animations + data insertion into the DOM occurs.
-    function loadPage(skip) {
+    function loadPage(skip, url) {
       $('#viewer').fadeOut("fast");
-      $.getJSON('http://whateverorigin.org/get?url=' +
-        encodeURIComponent('http://www.scp-wiki.net/scp-'+validateSkip(skip)) + '&callback=?',
-        function (data) {
-          var elements = $(data.contents), // convert the returned JSON object (which contains raw HTML) into a jQuery friendly object
-              found = $('#page-content', elements), // get the container with the relevant content, and discard the rest
-              curTitle = $('#page-title', elements).html(); // update the current title to the newly loaded page's title
-          curSkip = Number(curTitle.replace(/\D/g,'')); // remove all non-numerals in the current page title (i.e. turn SCP-104 into just 104)
-          found.children('.heritage-rating-module, div[style="text-align: right;"], .footnoteref, .footnotes-footer').remove(); // remove unwanted page elements
-          $('#viewer').html(found); // insert the returned AJAX page data into the current page
-          $('#viewer').fadeIn("fast"); // fade the element containing the new page data back in
-          collapsibleLinks(); // make sure any new collapsible links function as intended
-          $('#box').val(validateSkip(curSkip)); // update the text box at the top of the app page with the current number
-          window.history.pushState({}, '', '?scp='+curSkip); // update the url in the address bar to match the newly loaded page
-        }
-      );
+      if( skip ) { // if this page is a specific SCP object's article...
+        $.getJSON('http://whateverorigin.org/get?url=' + encodeURIComponent('http://www.scp-wiki.net/scp-' + validateSkip(skip) ) + '&callback=?', function(data) { afterPageLoad(data, 1); } );
+      } else if(!skip && url) { // otherwise, if it's a supplemental page or, really, any other page on the site...
+        $.getJSON('http://whateverorigin.org/get?url=' + encodeURIComponent('http://www.scp-wiki.net/' + url) + '&callback=?', function(data) { afterPageLoad(data, 0); } );
+      }
+    }
+
+    // Clean up the resulting JSON object, and then insert relevant data into the app's DOM
+    function afterPageLoad (data, skipYesNo) {
+      var elements = $(data.contents), // convert the returned JSON object (which contains raw HTML) into a jQuery friendly object
+          found = $('#page-content', elements), // get the container with the relevant content, and discard the rest
+          curTitle = $('#page-title', elements).html(); // update the current title to the newly loaded page's title
+      if(skipYesNo) { // if this page was a specific SCP article...
+        curSkip = Number(curTitle.replace(/\D/g,'')); // remove all non-numerals in the current page title (i.e. turn SCP-104 into just 104)
+        $('#box').val(validateSkip(curSkip)); // update the text box at the top of the app page with the current number
+        window.history.pushState({}, '', '?scp='+curSkip); // update the url in the address bar to match the newly loaded page
+      }
+      found.children('.heritage-rating-module, div[style="text-align: right;"], .footnoteref, .footnotes-footer').remove(); // remove unwanted page elements
+      $('#viewer').html(found); // insert the returned AJAX page data into the current page
+      $('#viewer').fadeIn("fast"); // fade the element containing the new page data back in
+      collapsibleLinks(); // make sure any new collapsible links function as intended
     }
 
     // verifies that the number being inserted into the scp-wiki.net url is valid in their parlance
@@ -76,6 +70,18 @@
       if( number == 1 ) { number = "002"; }
       if( number >= 2999 ) { number = "2999"; }
       return number;
+    }
+
+    // make sure the collapsible links from scp-wiki still function as intended
+    function collapsibleLinks() {
+      $('.collapsible-block-folded > a').removeAttr("href").click(function(){
+        $(this).parent().css("display", "none");
+        $(this).parent().parent().children('.collapsible-block-unfolded').fadeIn("slow");
+      });
+      $('.collapsible-block-unfolded-link > a').removeAttr("href").click(function(){
+        $(this).parent().parent().css("display", "none");
+        $(this).parent().parent().parent().children('.collapsible-block-folded').fadeIn("slow");
+      });
     }
 
     // ensure our ajax calls have the appropriate meta headers
@@ -113,7 +119,13 @@
       var urlSkip = window.location.search.substring(5);
       if( urlSkip ) { loadPage(urlSkip); }
     });
-  </script>
 
+    // ensure that a link to any supplemental article or a non-scp page will load as expected via the app's AJAX function.
+    $(document).on('click','a', function(e){
+      e.preventDefault();
+      var url = $(this).attr("href").replace(/^.*\/\/[^\/]+/, '');
+      loadPage("",url);
+    });
+  </script>
 </body>
 </html>
