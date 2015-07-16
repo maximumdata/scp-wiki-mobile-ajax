@@ -34,7 +34,7 @@
   <script>
     // assign a random scp if you're arriving at the page without a query string, so the previous and next functions work
     var curSkip = Math.floor(Math.random() * (2999 - 100 + 1)) + 100;
-    
+
     // make sure the collapsible links from scp-wiki still function as intended
     function collapsibleLinks() {
       $('.collapsible-block-folded > a').removeAttr("href").click(function(){
@@ -46,19 +46,7 @@
         $(this).parent().parent().parent().children('.collapsible-block-folded').fadeIn("slow");
       });
     }
-    
-    // get the scp number from the url. probably going to replace this with localStorage.curSkip
-    function GetQueryStringParams(sParam){
-      var sPageURL = window.location.search.substring(1);
-      var sURLVariables = sPageURL.split('&');
-      for (var i = 0; i < sURLVariables.length; i++){
-        var sParameterName = sURLVariables[i].split('=');
-        if (sParameterName[0] == sParam){
-          return sParameterName[1];
-        }
-      }
-    }
-    
+
     // ajax page load happens here. the url is routed through whateverorigin.org to inject CORS headers into the response, allowing use of another site's data from a cross-origin.
     // A json object is returned, and then animations + data insertion into the DOM occurs.
     function loadPage(skip) {
@@ -74,12 +62,12 @@
           $('#viewer').html(found); // insert the returned AJAX page data into the current page
           $('#viewer').fadeIn("fast"); // fade the element containing the new page data back in
           collapsibleLinks(); // make sure any new collapsible links function as intended
-          $('#box').val(curSkip); // update the text box at the top of the app page with the current number
+          $('#box').val(validateSkip(curSkip)); // update the text box at the top of the app page with the current number
           window.history.pushState({}, '', '?scp='+curSkip); // update the url in the address bar to match the newly loaded page
         }
       );
     }
-    
+
     // verifies that the number being inserted into the scp-wiki.net url is valid in their parlance
     function validateSkip(number) {
       number = Number(number);
@@ -89,29 +77,29 @@
       if( number >= 2999 ) { number = "2999"; }
       return number;
     }
-    
+
     // ensure our ajax calls have the appropriate meta headers
     $.ajaxSetup({
         scriptCharset: "utf-8",
         contentType: "application/json; charset=utf-8"
     });
-    
+
     // take the number from the text box and load the page associated with it. otherwise, display an error.
     $('#go').click(function(){
       var boxSkip = $('#box').val();
       if(boxSkip) { loadPage(boxSkip); } else { $('#viewer').html("You didn't enter a number!").fadeIn("fast"); }
     });
-    
+
     // take the current SCP number, subtract one, and load the page associated with it
     $('#prev').click(function(){
       loadPage(curSkip - 1);
     });
-    
+
     // same as above, but for going forward one
     $('#next').click(function(){
       loadPage(curSkip + 1);
     });
-    
+
     // these two functions handle swiping events, and load the previous or next SCP respectively.
     $('#viewer').on("swiperight", function(){
       $('#prev').click();
@@ -119,10 +107,10 @@
     $('#viewer').on("swipeleft", function(){
       $('#next').click();
     });
-    
+
     // make sure that if you arrive on the page from a link (i.e. mikedettmer.com/scp/?scp=054) that the proper page is loaded
     $(window).load(function(){
-      var urlSkip = GetQueryStringParams('scp');
+      var urlSkip = window.location.search.substring(5);
       if( urlSkip ) { loadPage(urlSkip); }
     });
   </script>
