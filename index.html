@@ -17,10 +17,12 @@
   </div>
 
   <div id="viewer" style="display: none;"></div>
+  <div id="loading" style="display: none"><div class="loader">Loading...</div></div>
 
   <style>
-    body { margin: 0 10px; background-color: lightgray; }
-    .form { position: fixed; top: 0px; right: 0px; left: 0px; z-index: 1000; text-align: center; height: 40px; background-color: lightgray; -webkit-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25); -moz-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25); box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25); }
+    body { margin: 0 10px; background-color: gray; color: black; }
+    a { color: lightgray; font-weight: bold; }
+    .form { position: fixed; top: 0px; right: 0px; left: 0px; z-index: 1000; text-align: center; height: 40px; background-color: gray; -webkit-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25); -moz-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25); box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25); }
     .wrap { padding: 5px 5px 0px 5px; }
     .form > .wrap > div { display: inline; }
     #box { height: 18px; font-size: 16px; width: 60px; text-align: center; font-weight: bold; vertical-align: middle; }
@@ -28,7 +30,15 @@
     .left { float:left; }
     .right { float: right; }
     #viewer { padding-top: 45px; font-size: 14px; }
+    #loading { padding-top: 100px; font-size: 30px; text-align: center; }
     .collapsible-block { cursor: pointer; }
+    .loader:before, .loader:after, .loader { border-radius: 50%; width: 2.5em; height: 2.5em; -webkit-animation-fill-mode: both; animation-fill-mode: both; -webkit-animation: load7 1.8s infinite ease-in-out; animation: load7 1.8s infinite ease-in-out; }
+    .loader { font-size: 10px; margin: 80px auto; position: relative; text-indent: -9999em; -webkit-transform: translateZ(0); -ms-transform: translateZ(0); transform: translateZ(0); -webkit-animation-delay: -0.16s; animation-delay: -0.16s; }
+    .loader:before { left: -3.5em; -webkit-animation-delay: -0.32s; animation-delay: -0.32s; }
+    .loader:after { left: 3.5em; }
+    .loader:before, .loader:after { content: ''; position: absolute; top: 0; }
+    @-webkit-keyframes load7 { 0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em lightgray; } 40% { box-shadow: 0 2.5em 0 0 lightgray; } }
+    @keyframes load7 { 0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em lightgray; } 40% { box-shadow: 0 2.5em 0 0 lightgray; } }
   </style>
 
   <script>
@@ -38,7 +48,9 @@
     // ajax page load happens here. the url is routed through whateverorigin.org to inject CORS headers into the response, allowing use of another site's data from a cross-origin.
     // A json object is returned, and then animations + data insertion into the DOM occurs.
     function loadPage(skip, url) {
-      $('#viewer').fadeOut("fast");
+      $('#viewer').fadeOut("fast", function(){
+        $('#loading').fadeIn("fast");
+      });
       if( skip ) { // if this page is a specific SCP object's article...
         $.getJSON('http://whateverorigin.org/get?url=' + encodeURIComponent('http://www.scp-wiki.net/scp-' + validateSkip(skip) ) + '&callback=?', function(data) { afterPageLoad(data, 1); } );
       } else if(!skip && url) { // otherwise, if it's a supplemental page or, really, any other page on the site...
@@ -58,8 +70,12 @@
       }
       found.children('.heritage-rating-module, div[style="text-align: right;"], .footnoteref, .footnotes-footer').remove(); // remove unwanted page elements
       $('#viewer').html(found); // insert the returned AJAX page data into the current page
-      $('#viewer').fadeIn("fast"); // fade the element containing the new page data back in
+      $('#loading').fadeOut("fast", function(){ // fade out the loading div
+        $('#viewer').fadeIn("fast"); // fade the element containing the new page data back in
+      });
       collapsibleLinks(); // make sure any new collapsible links function as intended
+      var pagetitle = $('title', elements).html();
+      console.log(pagetitle);
     }
 
     // verifies that the number being inserted into the scp-wiki.net url is valid in their parlance
