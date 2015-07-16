@@ -133,7 +133,7 @@
     // make sure that if you arrive on the page from a link (i.e. mikedettmer.com/scp/?scp=054) that the proper page is loaded
     $(window).load(function(){
       var urlSkip = window.location.search.substring(5);
-      if( urlSkip ) { loadPage(urlSkip); }
+      if( urlSkip ) { loadPage(urlSkip); } else { loadPage(curSkip); }
     });
 
     // ensure that a link to any supplemental article or a non-scp page will load as expected via the app's AJAX function.
